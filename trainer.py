@@ -43,10 +43,9 @@ if __name__ == '__main__':
 
     dataloaders = {}
 
-    for split in ['train_valid', 'valid', 'test']:
-        if len(dataset_splits[split]) > 0:
-            dataloaders[split] = DataLoader(dataset_splits[split], batch_size=1, shuffle=False, num_workers=1,
-                                            pin_memory=True)
+#    for split in ['train_valid', 'valid', 'test']:
+#        if len(dataset_splits[split]) > 0:
+#            dataloaders[split] = DataLoader(dataset_splits[split], batch_size=1, shuffle=False, pin_memory=True)
 
     if 'train_valid' in dataloaders:
         best = 10000.0

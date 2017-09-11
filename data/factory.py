@@ -27,7 +27,8 @@ def get_transforms(transforms):
 
 def get_dataset(config):
     dataset_classes = {
-        'kitti': dataset.KittiDataset
+        'kitti': dataset.KittiDataset,
+        'sceneflow': dataset.SceneFlowDataset,
     }
     paths = get_paths_for_dataset(config)
     split = util.split_dataset_paths(paths, config.train_ratio, config.train_valid_ratio, config.valid_ratio,

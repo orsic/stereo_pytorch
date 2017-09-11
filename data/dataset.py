@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 
-from data.util import open_image, load_disparity
+from data.util import open_image, load_disparity, load_pfm
 
 
 class KittiDataset(Dataset):
@@ -32,8 +32,8 @@ class SceneFlowDataset(Dataset):
     def __getitem__(self, item):
         path = self.paths[item]
         example = {
-            'left': open_image(path['left']),
-            'right': open_image(path['right']),
-            'disparity': load_disparity(path['disparity'])
+                'left': open_image(path['left'])[:,:,:3],
+                'right': open_image(path['right'])[:,:,:3],
+            'disparity': load_pfm(path['disparity'], 540, 960)
         }
         return self.transform(example)

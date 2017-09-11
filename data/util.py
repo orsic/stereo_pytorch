@@ -56,7 +56,7 @@ def load_pfm(filename, height, width):
 
     data = np.reshape(data, shape)
     data = np.flipud(data)
-    return data
+    return np.ascontiguousarray(data)
 
 
 def split_dataset_paths(paths, train_ratio, train_valid_ratio, valid_ratio, test_ratio):
