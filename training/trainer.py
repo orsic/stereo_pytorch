@@ -6,6 +6,7 @@ import sys
 
 from data.util import load_variable
 from .util import precision_th
+from .gradients import parameter_norms, store_parameter_norms
 
 
 def save_checkpoint(state, model_dir, is_best, filename='checkpoint.pth.tar'):
@@ -34,6 +35,9 @@ class Trainer(object):
         self.unary_scale_loss = config.get('unary_scale_loss', 0.0)
         self.max_disp = config.get('max_disp', 192)
         self.max_error = config.get('max_error', 3)
+        self.collect_gradients = config.get('collect_gradients', False)
+        if self.collect_gradients:
+            self.gradients_per_epoch = {}
 
     def __enter__(self):
         if self.checkpoint is not None:
@@ -70,6 +74,8 @@ class Trainer(object):
                     loss = self.model.loss(dc, lc, rc, unary_scale=self.unary_scale_loss)
                     loss.backward()
                     self.optimizer.step()
+                    if self.collect_gradients:
+                        self.gradients_per_epoch[self.global_step] = parameter_norms(self.optimizer)
                     self.optimizer.zero_grad()
                     print("train: epoch {} loss {}".format(epoch, loss.data[0]))
                 # validation

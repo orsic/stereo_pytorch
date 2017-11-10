@@ -10,6 +10,7 @@ import data.factory as dfac
 import training.factory as tfac
 from training.trainer import Trainer
 from training.util import num_params
+from training.gradients import store_parameter_norms
 
 if __name__ == '__main__':
     directory = sys.argv[1]
@@ -47,3 +48,5 @@ if __name__ == '__main__':
 
     with Trainer(model, dataloader_train, dataloaders, optimizer, model_dir, config) as trainer:
         trainer.train()
+        if trainer.collect_gradients:
+            store_parameter_norms(trainer.gradients_per_epoch, directory)
