@@ -9,12 +9,15 @@ class Padding(object):
         self.target_size = target_size
 
     def __call__(self, sample):
-        l, r, d = sample['left'], sample['right'], sample['disparity']
-        return {
+        l, r = sample['left'], sample['right']
+        trans = {
             'left': padding(l, self.target_size),
             'right': padding(r, self.target_size),
-            'disparity': padding(d, self.target_size[:2])
+            'name': sample['name'],
         }
+        if 'disparity' in sample:
+            trans['disparity'] = padding(sample['disparity'], self.target_size[:2])
+        return trans
 
 class RandomCrop(object):
     """Crop randomly the image in a sample.
@@ -35,7 +38,7 @@ class RandomCrop(object):
         self.left = left
 
     def __call__(self, sample):
-        l, r, d = sample['left'], sample['right'], sample['disparity']
+        l, r = sample['left'], sample['right']
 
         h, w = l.shape[:2]
         new_h, new_w = self.output_size
@@ -49,27 +52,33 @@ class RandomCrop(object):
 
         l = l[top: top + new_h, left: left + new_w]
         r = r[top: top + new_h, left: left + new_w]
-        if d is not None:
-            d = d[top: top + new_h, left: left + new_w]
-
-        return {
-            'left': l, 'right': r, 'disparity': d
+        trans = {
+            'left': l, 'right': r, 'name': sample['name'],
         }
+        if 'disparity' in sample:
+            d = sample['disparity']
+            d = d[top: top + new_h, left: left + new_w]
+            trans['disparity'] = d
+
+        return trans
 
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample):
-        l, r, d = sample['left'], sample['right'], sample['disparity']
+        l, r = sample['left'], sample['right']
 
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-        l = torch.from_numpy(l.transpose((2, 0, 1)))
-        r = torch.from_numpy(r.transpose((2, 0, 1)))
-        if d is not None:
-            d = torch.from_numpy(d)
-        return {
-            'left': l, 'right': r, 'disparity': d
+        l = torch.from_numpy(np.ascontiguousarray(l.transpose((2, 0, 1))))
+        r = torch.from_numpy(np.ascontiguousarray(r.transpose((2, 0, 1))))
+        trans = {
+            'left': l, 'right': r, 'name': sample['name'],
         }
+        if 'disparity' in sample:
+            d = sample['disparity']
+            d = torch.from_numpy(np.ascontiguousarray(d))
+            trans['disparity'] = d
+        return trans

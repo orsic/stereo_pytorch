@@ -2,18 +2,22 @@ from . import classification, regression, stereo, unary, volume
 
 unaries = {
     'resnet': unary.ResnetUnary,
+    'selu_resnet': unary.SeLuResnetUnary,
 }
 
 volumes = {
     'concat': volume.CostVolumeConcat,
+    'dot': volume.CostVolumeDot,
 }
 
 regressions = {
     'resnet': regression.ResnetRegression,
+    'selu_resnet': regression.SeLuResnetRegression,
 }
 
 classifications = {
-    'softargmin': classification.SoftArgmin
+    'softargmin': classification.SoftArgmin,
+    'softargmax': classification.SoftArgmax
 }
 
 

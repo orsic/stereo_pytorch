@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import png
+from torch.autograd import Variable
 
 
 def load_disparity(path):
@@ -80,3 +81,11 @@ def split_dataset_paths(paths, train_ratio, train_valid_ratio, valid_ratio, test
         'valid': valid_paths,
         'test': test_paths,
     }
+
+
+def load_variable(example, train):
+    l, r, d = example['left'].cuda(async=True), example['right'].cuda(async=True), example['disparity'].cuda(async=True)
+    if train:
+        return Variable(l, requires_grad=True), Variable(r, requires_grad=True), Variable(d)
+    else:
+        return Variable(l, volatile=True), Variable(r, volatile=True), Variable(d, volatile=True)

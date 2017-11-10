@@ -1,15 +1,18 @@
 from torch.utils.data import DataLoader
+import torch.nn as nn
 
 import sys
 import os
 
 import experiment.configuration as conf
 from experiment.logger import Logger
-import models.factory as mfac
+import models
 import data.factory as dfac
 import training.factory as tfac
 from training.trainer import Trainer
 from training.util import num_params
+from training.loss import L1SparseConsistencyLoss
+
 
 if __name__ == '__main__':
     directory = sys.argv[1]
@@ -19,12 +22,17 @@ if __name__ == '__main__':
 
     config = conf.Configuration(config_file)
 
-    model = mfac.create_model(config)
+    unary = models.unary.SeLuResnetUnary(**config.config)
+    volume = models.volume.CostVolumeDot(**config.config)
+    regression = models.regression.SeLuResnetRegression(**config.config)
+    classification = models.classification.SoftArgminOclussion(**config.config)
+
+    model = models.stereo.SeLuConsistencyStereoRegression(unary, volume, regression, classification)
 
     print(model)
     print('Number of parameters: {}'.format(num_params(model)))
 
-    criterion = tfac.get_loss(config)()
+    criterion = L1SparseConsistencyLoss()
     model.set_criterion(criterion)
     optimizer = tfac.get_optimizer(config)(model.parameters(), lr=config.lr)
 
@@ -36,8 +44,7 @@ if __name__ == '__main__':
     dataloaders = {}
     for split in ['train_valid', 'valid', 'test']:
         if len(dataset_splits[split]) > 0:
-            dataloaders[split] = DataLoader(dataset_splits[split], batch_size=2 * config.batch_size, shuffle=False,
-                                            pin_memory=True)
+            dataloaders[split] = DataLoader(dataset_splits[split], batch_size=1, shuffle=False, pin_memory=True)
 
     f = open(os.path.join(directory, 'train.txt'), 'a')
     sys.stdout = Logger(sys.stdout, f)

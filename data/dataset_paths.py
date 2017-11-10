@@ -2,6 +2,7 @@ import os
 import itertools
 import random
 import config
+from collections import namedtuple
 
 SCENE_FLOW_HOME = config.get('SCENE_FLOW_HOME')
 SCENE_FLOW_DIR_LEFT = 'left'
@@ -79,4 +80,29 @@ def get_all_kitti_test_paths():
         'disparity': None,
     } for image_name in sorted(filter(lambda x: x.endswith('png'), os.listdir(KITTI_TESTING_LEFT)))]
     random.shuffle(paths)
+    return paths
+
+CITYSCAPES_HOME = config.get('CITYSCAPES_HOME')
+CITYSCAPES_LEFT = os.path.join(CITYSCAPES_HOME, 'rgb')
+CITYSCAPES_RIGHT = os.path.join(CITYSCAPES_HOME, 'right/rightImg8bit')
+
+CityscapesPath = namedtuple('CityscapesPath', 'split city name left right')
+
+
+def get_cityscapes_paths():
+    def getp(split, city, file):
+        name = file.split('.')[0]
+        file_r = file[:-4] + '_rightImg8bit.png'
+        L, R = os.path.join(CITYSCAPES_LEFT, split, city, file), os.path.join(CITYSCAPES_RIGHT, split, city, file_r)
+        return CityscapesPath(split, city, name, L, R)
+
+    splits = os.listdir(CITYSCAPES_LEFT)
+    paths = {}
+    for split in splits:
+        paths[split] = []
+        cities = os.listdir(os.path.join(CITYSCAPES_LEFT, split))
+        for city in cities:
+            filenames = os.listdir(os.path.join(CITYSCAPES_LEFT, split, city))
+            for filename in filenames:
+                paths[split].append(getp(split, city, filename))
     return paths
