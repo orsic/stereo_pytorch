@@ -87,3 +87,32 @@ class SeLuResnetUnary(nn.Module):
             unaries[side] = self.conv_projection(x)
         un_l, un_r = unaries['left'], unaries['right']
         return un_l, un_r
+
+
+class SeLuConv(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, **kwargs):
+        super(SeLuConv, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, **kwargs)
+
+    def forward(self, x):
+        return F.selu(self.conv(x))
+
+
+class UnaryMCCNN(nn.Module):
+    def __init__(self, **config):
+        super(UnaryMCCNN, self).__init__()
+        self.num_layers = config.get('num_layers', 4)
+        self.unary_ksize = config.get('unary_ksize', 3)
+        self.unary_features = config.get('unary_features', 32)
+        self.stem_stride = config.get('stem_strides', 2)
+
+        self.features = nn.Sequential(
+            SeLuConv(3, self.unary_features, self.unary_ksize, stride=self.stem_stride, padding=1),
+            *[SeLuConv(self.unary_features, self.unary_features, self.unary_ksize, padding=1) for _ in
+              range(self.num_layers - 2)],
+            nn.Conv2d(self.unary_features, self.unary_features, self.unary_ksize, padding=1)
+        )
+
+    def forward(self, left, right):
+        un_l, un_r = self.features(left), self.features(right)
+        return un_l, un_r

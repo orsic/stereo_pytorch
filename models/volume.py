@@ -5,7 +5,7 @@ import torch.nn as nn
 class CostVolumeConcat(nn.Module):
     def __init__(self, **config):
         super(CostVolumeConcat, self).__init__()
-        self.stem_stride = config.get('stem_stride', 2)
+        self.stem_stride = config.get('stem_strides', 2)
         self.max_disp = config.get('max_disp', 192)
 
     def forward(self, un_l, un_r, direction=1):
@@ -19,7 +19,7 @@ class CostVolumeConcat(nn.Module):
 class CostVolumeDot(nn.Module):
     def __init__(self, **config):
         super(CostVolumeDot, self).__init__()
-        self.stem_stride = config.get('stem_stride', 2)
+        self.stem_stride = config.get('stem_strides', 2)
         self.max_disp = config.get('max_disp', 192)
 
     def dot(self, L, R, dim):

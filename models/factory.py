@@ -3,6 +3,7 @@ from . import classification, regression, stereo, unary, volume
 unaries = {
     'resnet': unary.ResnetUnary,
     'selu_resnet': unary.SeLuResnetUnary,
+    'mccnn': unary.UnaryMCCNN,
 }
 
 volumes = {

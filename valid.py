@@ -24,7 +24,7 @@ if __name__ == '__main__':
     config = conf.Configuration(config_file)
 
     model = mfac.create_model(config)
-    model.load_state_dict(torch.load(os.path.join(model_dir, config.checkpoint))['state_dict'])
+    model.load_state_dict(torch.load(os.path.join(model_dir, config.get('checkpoint', 'model_best.pth.tar')))['state_dict'])
 
     dataset_splits = dfac.get_dataset_eval(config)
 
