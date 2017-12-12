@@ -14,6 +14,7 @@ volumes = {
 regressions = {
     'resnet': regression.ResnetRegression,
     'selu_resnet': regression.SeLuResnetRegression,
+    'selu_resnet_fuse': regression.SeLuFuseResnetRegression,
 }
 
 classifications = {

@@ -7,11 +7,13 @@ from torch.autograd import Variable
 class L1LossSparse(nn.L1Loss):
     def __init__(self, *args, **kwargs):
         super(L1LossSparse, self).__init__(size_average=False)
+        self.max_disp = int(kwargs.get('max_disp', 192))
 
     def forward(self, output, target):
-        N = (target > 0).float().sum()
+        mask = (target > 0).float() * (target < self.max_disp).float()
+        N = mask.sum()
         if (N.data > 0).all():
-            loss = super(L1LossSparse, self).forward(output * (target > 0).float(), target)
+            loss = super(L1LossSparse, self).forward(output * mask, target)
             loss /= N.float()
         else:
             loss = 0
@@ -20,7 +22,18 @@ class L1LossSparse(nn.L1Loss):
 
 class L1LossDense(nn.L1Loss):
     def __init__(self, *args, **kwargs):
-        super(L1LossDense, self).__init__(size_average=True)
+        super(L1LossDense, self).__init__(size_average=False)
+        self.max_disp = kwargs.get('max_disp', 192)
+
+    def forward(self, output, target):
+        mask = (target <= self.max_disp).float()
+        N = mask.sum()
+        if (N.data > 0).all():
+            loss = super(L1LossDense, self).forward(output * mask, target)
+            loss /= N.float()
+        else:
+            loss = 0
+        return loss
 
 
 class L1Loss(nn.L1Loss):

@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import png
+import torch
 from torch.autograd import Variable
 
 
@@ -17,6 +18,9 @@ def store_disparity(disparity, path):
     writer = png.Writer(size=result.shape[::-1], greyscale=True, bitdepth=16)
     with open(path, 'wb') as fp:
         writer.write(fp, result)
+
+def store_image(img, path):
+    Image.fromarray(img.astype('uint8')).save(path)
 
 
 def padding(img, size):

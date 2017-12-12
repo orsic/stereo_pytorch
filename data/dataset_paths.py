@@ -67,6 +67,20 @@ def get_odometry_paths():
     random.shuffle(paths)
     return paths
 
+def get_odometry_paths_demo():
+    paths = {}
+    for sequence in sorted(os.listdir(KITTI_ODOMETRY_HOME)):
+        paths[sequence] = []
+        left_folder = os.path.join(KITTI_ODOMETRY_HOME, sequence, 'image_2')
+        right_folder = os.path.join(KITTI_ODOMETRY_HOME, sequence, 'image_3')
+        for name in sorted(filter(lambda x: x.endswith('png'), os.listdir(left_folder))):
+            paths[sequence].append({
+                'disparity': None,
+                'left': os.path.join(left_folder, name),
+                'right': os.path.join(right_folder, name),
+            })
+    return paths
+
 
 KITTI_TESTING_HOME = os.path.join(KITTI_HOME, 'testing')
 KITTI_TESTING_LEFT = os.path.join(KITTI_TESTING_HOME, 'image_2')

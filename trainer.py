@@ -25,7 +25,7 @@ if __name__ == '__main__':
     print(model)
     print('Number of parameters: {}'.format(num_params(model)))
 
-    criterion = tfac.get_loss(config)()
+    criterion = tfac.get_loss(config)(max_disp=config.max_disp)
     model.set_criterion(criterion)
     optimizer = tfac.get_optimizer(config)(model.parameters(), lr=config.lr)
 

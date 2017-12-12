@@ -22,6 +22,23 @@ class KittiDataset(Dataset):
         }
         return self.transform(example)
 
+class KittiOdometryDataset(Dataset):
+    def __init__(self, paths, transform=None):
+        self.paths = paths
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __getitem__(self, item):
+        path = self.paths[item]
+        example = {
+            'left': open_image(path['left']),
+            'right': open_image(path['right']),
+            'name': path['left'].split(os.sep)[-1]
+        }
+        return self.transform(example)
+
 class CityScapes(Dataset):
     def __init__(self, paths, transform=None):
         self.paths = paths

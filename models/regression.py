@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -121,7 +122,21 @@ class SeLuUpblock(nn.Module):
         return deconv + skip
 
 
+class SeLuFuseUpblock(nn.Module):
+    def __init__(self, feats_in, feats_out, ksize, pad, opad):
+        super(SeLuFuseUpblock, self).__init__()
+        self.deconv = nn.ConvTranspose3d(feats_in, feats_out, ksize, stride=2, padding=pad, output_padding=opad,
+                                         bias=False)
+        self.conv = nn.Conv3d(2 * feats_out, feats_out, 1)
+
+    def forward(self, x, skip):
+        deconv = F.selu(self.deconv(x), inplace=True)
+        return F.selu(self.conv(torch.cat((deconv, skip), dim=1)), inplace=True)
+
+
 class SeLuResnetRegression(nn.Module):
+    upblock_class = SeLuUpblock
+
     def __init__(self, **config):
         super(SeLuResnetRegression, self).__init__()
         # configuration
@@ -157,7 +172,7 @@ class SeLuResnetRegression(nn.Module):
         ]
 
         for i, params in enumerate(deconv_params):
-            setattr(self, 'deconv_{}'.format(i + 1), SeLuUpblock(**params))
+            setattr(self, 'deconv_{}'.format(i + 1), self.upblock_class(**params))
 
         self.deconv_3d_proj = nn.ConvTranspose3d(F_u, 1, K_u, stride=2, padding=pad, output_padding=opad, bias=False)
 
@@ -176,3 +191,7 @@ class SeLuResnetRegression(nn.Module):
             next_in = dc(next_in, residual[l])
         projection = self.deconv_3d_proj(next_in)
         return projection
+
+
+class SeLuFuseResnetRegression(SeLuResnetRegression):
+    upblock_class = SeLuFuseUpblock

@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
+import numpy as np
 
 
 def create_meshgrid(N, H, W):
@@ -64,3 +65,12 @@ def sampler_reconstruct(image, disparity, target='L'):
     sampled = F.grid_sample(image, grid)
 
     return sampled
+
+
+def sampler_flow(image, flow):
+    N, C, H, W = image.size()
+    grid_dims = [torch.from_numpy(m) for m in np.meshgrid(np.linspace(-1, 1, W, dtype=np.float32), np.linspace(-1, 1, H, dtype=np.float32))]
+    grid = torch.stack(grid_dims, dim=-1).unsqueeze(0).repeat(N,1,1,1)
+    grid[...,0] += flow[...,0] / H
+    grid[...,1] += flow[...,1] / W
+    return F.grid_sample(image, grid)
